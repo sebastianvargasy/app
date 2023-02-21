@@ -1,32 +1,52 @@
 import streamlit as st
-import requests
-import schedule
-import time
+import feedparser
+import pandas as pd
 
-st.set_page_config(page_title="Web Monitor", page_icon=":computer:")
+# Configuración de página
+st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
 
-site_url = st.text_input("Ingrese la URL del sitio web a monitorear")
+# Encabezado de la página
+st.beta_container()
+st.markdown("<h1 style='text-align: center;'>The Ciber House</h1>", unsafe_allow_html=True)
+st.write(" ")
 
-status_text = st.empty()
+# Creamos una lista con los feeds que queremos leer
+rss_feeds = [
+    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
+    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
+    "https://feeds.feedburner.com/hispasec/zCAd"
+]
 
-history = []
+# Leemos los feeds y guardamos los artículos en una lista de diccionarios
+articles = []
+for rss_feed in rss_feeds:
+    feed = feedparser.parse(rss_feed)
+    for entry in feed.entries[:5]:  # Tomamos sólo las 5 noticias más recientes
+        article = {}
+        article['feed'] = feed.feed.title
+        article['title'] = entry.title
+        article['date'] = entry.get('published', '')
+        article['summary'] = entry.get('summary', '')
+        article['url'] = entry.link
+        articles.append(article)
 
-def check_site():
-    try:
-        response = requests.get(site_url)
-        status_code = response.status_code
-        if status_code == 200:
-            status_text.success("El sitio está en línea.")
-        else:
-            status_text.warning("El sitio está en línea, pero ha devuelto un código de estado distinto de 200.")
-    except requests.exceptions.ConnectionError:
-        status_text.error("El sitio no está disponible.")
-        status_code = None
-    
-    history.append({"timestamp": time.time(), "status": status_code})
+# Convertimos la lista de diccionarios a un DataFrame de Pandas
+df = pd.DataFrame(articles)
 
-schedule.every(5).seconds.do(check_site)
+# Convertimos la columna "date" a una columna de fecha
+if 'date' in df:
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+# Ordenamos el DataFrame por fecha
+df = df.sort_values('date', ascending=False).reset_index(drop=True)
+
+# Eliminamos la columna "authors"
+df = df.drop(['authors'], axis=1)
+
+# Mostramos la tabla de noticias en Pandas
+st.write(df)
+
+# Pie de página
+st.write(" ")
+st.beta_container()
+st.markdown("<p style='text-align: center;'>By Sebastian Vargas</p>", unsafe_allow_html=True)
