@@ -11,7 +11,7 @@ st.write(" ")
 
 # Creamos una lista con los feeds que queremos leer
 rss_feeds = [
-    "https://www.cshub.com/rss/news",
+    "https://www.zerodayinitiative.com/rss/published/",
     "https://feeds.feedburner.com/hispasec/zCAd"
 ]
 
