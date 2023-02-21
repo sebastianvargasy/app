@@ -3,10 +3,10 @@ import feedparser
 import pandas as pd
 
 # Configuración de página
-st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
+st.set_page_config(page_title="El pasquin de Ciberseguridad", page_icon="📰", layout="wide")
 
 # Encabezado de la página
-st.markdown("<h1 style='text-align: center;'>Noticias RSS</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>El pasquin de Ciberseguridad</h1>", unsafe_allow_html=True)
 st.write(" ")
 
 # Creamos una lista con los feeds que queremos leer
