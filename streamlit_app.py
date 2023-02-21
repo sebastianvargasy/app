@@ -47,5 +47,5 @@ else:
 
 # Pie de página
 st.write(" ")
-st.markdown("<p style='text-align: center;'>Hecho con Streamlit</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Hecho con ❤️ por Sebastian Vargas</p>", unsafe_allow_html=True)
 
