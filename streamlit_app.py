@@ -48,6 +48,7 @@ def make_clickable(url):
     url = url.replace("&amp;", "&")
     return f'<a href="{url}" target="_blank">{url}</a>'
 
+df['url'] = df['url'].astype(str)
 df['url_html'] = df['url'].apply(make_clickable, axis=1)
 df = df[['feed', 'title', 'authors', 'date', 'url_html']]
 
