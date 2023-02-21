@@ -2,3 +2,4 @@ streamlit
 feedparser
 newspaper3k
 panda
+streamlit_aggrid
