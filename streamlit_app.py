@@ -40,9 +40,6 @@ if 'date' in df:
 # Ordenamos el DataFrame por fecha
 df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
-# Eliminamos la columna "authors"
-df = df.drop(['authors'], axis=1)
-
 # Mostramos la tabla de noticias en Pandas
 st.write(df)
 
