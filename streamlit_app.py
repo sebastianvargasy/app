@@ -5,6 +5,11 @@ import pandas as pd
 # Configuración de página
 st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
 
+# Encabezado de la página
+st.beta_container()
+st.markdown("<h1 style='text-align: center;'>The Ciber House</h1>", unsafe_allow_html=True)
+st.write(" ")
+
 # Creamos una lista con los feeds que queremos leer
 rss_feeds = [
     "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
@@ -16,7 +21,7 @@ rss_feeds = [
 articles = []
 for rss_feed in rss_feeds:
     feed = feedparser.parse(rss_feed)
-    for entry in feed.entries:
+    for entry in feed.entries[:5]:  # Tomamos sólo las 5 noticias más recientes
         article = {}
         article['feed'] = feed.feed.title
         article['title'] = entry.title
@@ -38,3 +43,9 @@ df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
 # Mostramos la tabla de noticias en Pandas
 st.write(df)
+
+# Pie de página
+st.write(" ")
+st.beta_container()
+st.markdown("<p style='text-align: center;'>By Sebastian Vargas</p>", unsafe_allow_html=True)
+
