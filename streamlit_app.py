@@ -13,7 +13,7 @@ st.write(" ")
 # Creamos una lista con los feeds que queremos leer
 rss_feeds = [
     "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
-    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
+    "https://www.google.com/alerts/feeds/04729041965786430663/10669661265694116875",
     "https://feeds.feedburner.com/hispasec/zCAd"
 ]
 
