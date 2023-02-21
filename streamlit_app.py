@@ -1,6 +1,5 @@
 import streamlit as st
 import feedparser
-from datetime import datetime
 import pandas as pd
 import html
 
@@ -45,11 +44,9 @@ df = df.sort_values('date', ascending=False).reset_index(drop=True)
 # Agregamos una columna con enlaces clickeables
 def make_clickable(url):
     url = html.escape(url)
-    url = url.replace("&amp;", "&")
     return f'<a href="{url}" target="_blank">{url}</a>'
 
-df['url'] = df['url'].astype(str)
-df['url_html'] = df['url'].apply(make_clickable, axis=1)
+df['url_html'] = df['url'].astype(str).apply(make_clickable, axis=1)
 df = df[['feed', 'title', 'authors', 'date', 'url_html']]
 
 # Mostramos la tabla de noticias en Pandas
@@ -61,3 +58,4 @@ with footer_container:
     col1, col2 = st.beta_columns([1, 3])
     col1.write("")
     col2.write("By Sebastian Vargas")
+
