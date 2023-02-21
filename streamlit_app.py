@@ -6,7 +6,6 @@ import pandas as pd
 st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
 
 # Encabezado de la página
-st.container()
 st.markdown("<h1 style='text-align: center;'>The Ciber House</h1>", unsafe_allow_html=True)
 st.write(" ")
 
@@ -21,7 +20,7 @@ rss_feeds = [
 articles = []
 for rss_feed in rss_feeds:
     feed = feedparser.parse(rss_feed)
-    for entry in feed.entries[:5]:  # Tomamos sólo las 5 noticias más recientes
+    for entry in feed.entries:
         article = {}
         article['feed'] = feed.feed.title
         article['title'] = entry.title
@@ -40,11 +39,29 @@ if 'date' in df:
 # Ordenamos el DataFrame por fecha
 df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
-# Mostramos la tabla de noticias en Pandas
-st.write(df)
+# Limitamos el número de noticias a las últimas 30
+df = df.head(30)
 
-# Pie de página
-st.write(" ")
-st.container()
-st.markdown("<p style='text-align: center;'>By Sebastian Vargas</p>", unsafe_allow_html=True)
+# Creamos un diccionario de DataFrames para cada fuente RSS
+dfs = {}
+for rss_feed in rss_feeds:
+    feed = feedparser.parse(rss_feed)
+    articles = []
+    for entry in feed.entries:
+        article = {}
+        article['feed'] = feed.feed.title
+        article['title'] = entry.title
+        article['date'] = entry.get('published', '')
+        article['summary'] = entry.get('summary', '')
+        article['url'] = entry.link
+        articles.append(article)
+    df = pd.DataFrame(articles)
+    dfs[feed.feed.title] = df
+
+# Mostramos las noticias de cada fuente RSS en pestañas separadas
+for feed_title, df in dfs.items():
+    st.write(f"## {feed_title}")
+    st.write(df.head(10))
+    st.write("")
+
 
