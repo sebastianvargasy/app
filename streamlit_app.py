@@ -10,48 +10,42 @@ st.markdown("<h1 style='text-align: center;'>Noticias RSS</h1>", unsafe_allow_ht
 st.write(" ")
 
 # Creamos una lista con los feeds que queremos leer
-rss_feeds = {
-    "CCN-CERT Noticias": "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
-    "CCN-CERT Vulnerabilidades": "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
-    "Hispasec": "https://feeds.feedburner.com/hispasec/zCAd"
-}
+rss_feeds = [
+    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
+    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
+    "https://feeds.feedburner.com/hispasec/zCAd"
+]
 
+# Leemos los feeds y guardamos los artículos en un diccionario de DataFrames de Pandas
 dfs = {}
-for title, url in rss_feeds.items():
-    feed = feedparser.parse(url)
+for rss_feed in rss_feeds:
+    feed = feedparser.parse(rss_feed)
     articles = []
-    for entry in feed.entries[:10]:  # Tomamos sólo las 10 noticias más recientes
+    for entry in feed.entries[:10]:  # Tomamos sólo las 10 noticias más recientes de cada feed
         article = {}
-        article['feed'] = title
+        article['feed'] = feed.feed.title
         article['title'] = entry.title
         article['date'] = entry.get('published', '')
         article['summary'] = entry.get('summary', '')
         article['url'] = entry.link
         articles.append(article)
-
     df = pd.DataFrame(articles)
     if 'date' in df:
         df['date'] = pd.to_datetime(df['date'], errors='coerce')
-    df = df.sort_values('date', ascending=False).reset_index(drop=True)
+        df = df.dropna(subset=['date'])  # Eliminamos las filas con fechas nulas
+        df = df.sort_values('date', ascending=False).reset_index(drop=True)
+        dfs[feed.feed.title] = df
 
-    dfs[title] = df
-
-# Creamos las pestañas
-tabs = st.sidebar.multiselect(
-    "Seleccione los RSS a mostrar",
-    list(rss_feeds.keys()),
-    default=list(rss_feeds.keys())
-)
-
-# Mostramos los RSS seleccionados
-for tab in tabs:
-    st.write(f"## {tab}")
-    df = dfs[tab]
-    st.write(df[['title', 'date', 'summary']].to_html(escape=False, index=False), unsafe_allow_html=True)
+# Mostramos las noticias en pestañas separadas para cada feed
+if dfs:
+    feed_names = list(dfs.keys())
+    feed_index = st.sidebar.selectbox("Selecciona un feed:", feed_names)
+    st.write(f"### Noticias de {feed_index}")
+    st.write(dfs[feed_index])
+else:
+    st.write("No se pudieron leer los feeds de noticias.")    
 
 # Pie de página
 st.write(" ")
-st.markdown("<p style='text-align: center;'>Hecho con ❤️ por Sebastian Vargas</p>", unsafe_allow_html=True)
-
-
+st.markdown("<p style='text-align: center;'>Hecho con Streamlit</p>", unsafe_allow_html=True)
 
