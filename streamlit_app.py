@@ -5,7 +5,7 @@ st.set_page_config(page_title="Últimas noticias de RSS", page_icon=":newspaper:
 
 # Creamos una lista con los feeds que queremos leer
 rss_feeds = [
-    "https://www.nytimes.com/sitemap.xml",
+    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
     "https://elpais.com/sitemap.xml",
     "https://www.bbc.com/news/sitemap.xml"
 ]
