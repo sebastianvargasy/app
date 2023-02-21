@@ -3,13 +3,15 @@ import feedparser
 import pandas as pd
 import html
 
-# Configuramos la página con un encabezado y un pie de página personalizados
-st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide", initial_sidebar_state="collapsed")
+# Configuración de página
+st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
 
-# Creamos un encabezado personalizado
-header_container = st.beta_container()
-with header_container:
-    st.title("The Ciber House")
+# Función para crear enlaces clickeables
+def make_clickable(url):
+    if pd.isna(url):
+        return ""
+    url = html.escape(url)
+    return f'<a href="{url}" target="_blank">{url}</a>'
 
 # Creamos una lista con los feeds que queremos leer
 rss_feeds = [
@@ -28,6 +30,7 @@ for rss_feed in rss_feeds:
         article['title'] = entry.title
         article['authors'] = entry.get('author', '')
         article['date'] = entry.get('published', '')
+        article['summary'] = entry.get('summary', '')
         article['url'] = entry.link
         articles.append(article)
 
@@ -42,20 +45,14 @@ if 'date' in df:
 df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
 # Agregamos una columna con enlaces clickeables
-def make_clickable(url):
-    url = html.escape(url)
-    return f'<a href="{url}" target="_blank">{url}</a>'
+df['url_html'] = df['url'].fillna('').astype(str).apply(make_clickable, axis=1)
+df = df[['feed', 'title', 'authors', 'date', 'summary', 'url_html']]
 
-df['url_html'] = df['url'].astype(str).apply(make_clickable, axis=1)
-df = df[['feed', 'title', 'authors', 'date', 'url_html']]
+# Encabezado de la página
+st.markdown("<h1 style='text-align: center; color: black;'>The Cyber House</h1>", unsafe_allow_html=True)
 
-# Mostramos la tabla de noticias en Pandas
+# Tabla de noticias en Pandas
 st.write(df, unsafe_allow_html=True)
 
-# Creamos un pie de página personalizado
-footer_container = st.beta_container()
-with footer_container:
-    col1, col2 = st.beta_columns([1, 3])
-    col1.write("")
-    col2.write("By Sebastian Vargas")
-
+# Pie de página
+st.markdown("<p style='text-align: center; color: black;'>By Sebastian Vargas</p>", unsafe_allow_html=True)
