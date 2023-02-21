@@ -6,7 +6,7 @@ import pandas as pd
 st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
 
 # Encabezado de la página
-st.container()
+st.beta_container()
 st.markdown("<h1 style='text-align: center;'>The Ciber House</h1>", unsafe_allow_html=True)
 st.write(" ")
 
@@ -41,14 +41,13 @@ if 'date' in df:
 df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
 # Eliminamos la columna "authors"
-if 'authors' in df:
-    df = df.drop(['authors'], axis=1)
+df = df.drop(['authors'], axis=1)
 
 # Mostramos la tabla de noticias en Pandas
 st.write(df)
 
 # Pie de página
 st.write(" ")
-st.container()
+st.beta_container()
 st.markdown("<p style='text-align: center;'>By Sebastian Vargas</p>", unsafe_allow_html=True)
 
