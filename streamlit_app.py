@@ -2,26 +2,16 @@ import streamlit as st
 import feedparser
 import pandas as pd
 
-# Configuración de página
 st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
+st.title("The Ciber House")
 
-# Encabezado de la página
-st.beta_container()
-st.markdown("<h1 style='text-align: center;'>The Ciber House</h1>", unsafe_allow_html=True)
-st.write(" ")
+# Leer feeds RSS
+rss_feeds = [    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",    "https://feeds.feedburner.com/hispasec/zCAd"]
 
-# Creamos una lista con los feeds que queremos leer
-rss_feeds = [
-    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
-    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
-    "https://feeds.feedburner.com/hispasec/zCAd"
-]
-
-# Leemos los feeds y guardamos los artículos en una lista de diccionarios
 articles = []
 for rss_feed in rss_feeds:
     feed = feedparser.parse(rss_feed)
-    for entry in feed.entries[:5]:  # Tomamos sólo las 5 noticias más recientes
+    for entry in feed.entries[:5]:  # Leer las 5 entradas más recientes
         article = {}
         article['feed'] = feed.feed.title
         article['title'] = entry.title
@@ -30,54 +20,38 @@ for rss_feed in rss_feeds:
         article['url'] = entry.link
         articles.append(article)
 
-# Convertimos la lista de diccionarios a un DataFrame de Pandas
 df = pd.DataFrame(articles)
-
-# Convertimos la columna "date" a una columna de fecha
-if 'date' in df:
-    df['date'] = pd.to_datetime(df['date'], errors='coerce')
-
-# Ordenamos el DataFrame por fecha
+df['date'] = pd.to_datetime(df['date'], errors='coerce')
 df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
-# Eliminamos la columna "authors"
-df = df.drop(['authors'], axis=1)
+# Mostrar la tabla de noticias
+st.write("Noticias RSS más recientes")
+st.dataframe(df.style.hide_columns(['authors'])) 
 
-# Mostramos la tabla de noticias en Pandas
-st.write("Noticias de ciberseguridad", df)
+# Leer feed del Zero Day Initiative
+zdi_feed = "https://www.zerodayinitiative.com/rss/zdi-all.xml"
 
-# Creamos una segunda tabla con el feed de Zero Day Initiative
-rss_feed_zdi = "https://www.zerodayinitiative.com/rss/published/"
-feed_zdi = feedparser.parse(rss_feed_zdi)
+zdi_articles = []
+zdi_feed = feedparser.parse(zdi_feed)
+for entry in zdi_feed.entries[:10]:  # Leer las 10 entradas más recientes
+    zdi_article = {}
+    zdi_article['title'] = entry.title
+    zdi_article['date'] = entry.get('published', '')
+    zdi_article['summary'] = entry.get('summary', '')
+    zdi_article['url'] = entry.link
+    zdi_articles.append(zdi_article)
 
-# Leemos los artículos del feed y guardamos en una lista de diccionarios
-articles_zdi = []
-for entry in feed_zdi.entries:
-    article = {}
-    article['title'] = entry.title
-    article['date'] = entry.get('published', '')
-    article['summary'] = entry.get('summary', '')
-    article['url'] = entry.link
-    articles_zdi.append(article)
+zdi_df = pd.DataFrame(zdi_articles)
+zdi_df['date'] = pd.to_datetime(zdi_df['date'], errors='coerce')
+zdi_df = zdi_df.sort_values('date', ascending=False).reset_index(drop=True)
 
-# Convertimos la lista de diccionarios a un DataFrame de Pandas
-df_zdi = pd.DataFrame(articles_zdi)
-
-# Convertimos la columna "date" a una columna de fecha
-if 'date' in df_zdi:
-    df_zdi['date'] = pd.to_datetime(df_zdi['date'], errors='coerce')
-
-# Ordenamos el DataFrame por fecha
-df_zdi = df_zdi.sort_values('date', ascending=False).reset_index(drop=True)
-
-# Creamos una barra de búsqueda
-search_term = st.text_input("Buscar en las noticias de Zero Day Initiative:", "")
-
-# Filtramos la tabla según el término de búsqueda
-if search_term:
-    df_zdi = df_zdi[df_zdi['title'].str.contains(search_term, case=False)]
-
-# Mostramos la tabla de noticias de Zero Day Initiative en Pandas
-st.write
+# Mostrar la tabla de noticias del Zero Day Initiative con paginación
+st.write("Noticias Zero Day Initiative más recientes")
+page_size = 10
+page = st.sidebar.slider("Página", 1, int(len(zdi_df) / page_size) + 1)
+start = (page - 1) * page_size
+end = start + page_size
+st.dataframe(zdi_df.iloc[start:end].style.hide_index())
+st.sidebar.write("By Sebastian Vargas") 
 
 
