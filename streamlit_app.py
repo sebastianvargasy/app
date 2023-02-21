@@ -37,7 +37,7 @@ for rss_feed in rss_feeds:
         df['date'] = pd.to_datetime(df['date'], errors='coerce')
 
     if 'date' in df:
-    df = df.sort_values('date', ascending=False).reset_index(drop=True)
+        df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
     # Limitamos a 10 noticias
     df = df[:10]
