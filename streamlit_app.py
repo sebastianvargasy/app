@@ -6,53 +6,52 @@ import pandas as pd
 st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
 
 # Encabezado de la página
-st.write("<h1 style='text-align: center;'>The Ciber House</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Noticias RSS</h1>", unsafe_allow_html=True)
 st.write(" ")
 
 # Creamos una lista con los feeds que queremos leer
-rss_feeds = [
-    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
-    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
-    "https://feeds.feedburner.com/hispasec/zCAd"
-]
+rss_feeds = {
+    "CCN-CERT Noticias": "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
+    "CCN-CERT Vulnerabilidades": "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
+    "Hispasec": "https://feeds.feedburner.com/hispasec/zCAd"
+}
 
 dfs = {}
-for rss_feed in rss_feeds:
-    # Leemos los feeds y guardamos los artículos en una lista de diccionarios
+for title, url in rss_feeds.items():
+    feed = feedparser.parse(url)
     articles = []
-    feed = feedparser.parse(rss_feed)
-    for entry in feed.entries:
+    for entry in feed.entries[:10]:  # Tomamos sólo las 10 noticias más recientes
         article = {}
+        article['feed'] = title
         article['title'] = entry.title
         article['date'] = entry.get('published', '')
         article['summary'] = entry.get('summary', '')
         article['url'] = entry.link
         articles.append(article)
 
-    # Convertimos la lista de diccionarios a un DataFrame de Pandas
     df = pd.DataFrame(articles)
-
-    # Convertimos la columna "date" a una columna de fecha
     if 'date' in df:
         df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
-    if 'date' in df:
-        df = df.sort_values('date', ascending=False).reset_index(drop=True)
+    dfs[title] = df
 
-    # Limitamos a 10 noticias
-    df = df[:10]
+# Creamos las pestañas
+tabs = st.sidebar.multiselect(
+    "Seleccione los RSS a mostrar",
+    list(rss_feeds.keys()),
+    default=list(rss_feeds.keys())
+)
 
-    # Guardamos el DataFrame en un diccionario con el título del feed como clave
-    dfs[feed.feed.title] = df
-
-# Creamos pestañas para cada feed
-tabs = st.tabs(list(dfs.keys()))
+# Mostramos los RSS seleccionados
 for tab in tabs:
-    st.write(dfs[tab])
+    st.write(f"## {tab}")
+    df = dfs[tab]
+    st.write(df[['title', 'date', 'summary']].to_html(escape=False, index=False), unsafe_allow_html=True)
 
 # Pie de página
 st.write(" ")
-st.write("<p style='text-align: center;'>By Sebastian Vargas</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Hecho con ❤️ por Sebastian Vargas</p>", unsafe_allow_html=True)
 
 
 
