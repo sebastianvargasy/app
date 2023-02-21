@@ -5,13 +5,18 @@ import pandas as pd
 st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
 st.title("The Ciber House")
 
-# Leer feeds RSS
-rss_feeds = [    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",    "https://feeds.feedburner.com/hispasec/zCAd"]
+# RSS feeds to read
+rss_feeds = [
+    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
+    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
+    "https://feeds.feedburner.com/hispasec/zCAd"
+]
 
+# Read RSS feeds and save articles in a list of dictionaries
 articles = []
 for rss_feed in rss_feeds:
     feed = feedparser.parse(rss_feed)
-    for entry in feed.entries[:5]:  # Leer las 5 entradas más recientes
+    for entry in feed.entries:
         article = {}
         article['feed'] = feed.feed.title
         article['title'] = entry.title
@@ -20,38 +25,57 @@ for rss_feed in rss_feeds:
         article['url'] = entry.link
         articles.append(article)
 
+# Convert list of dictionaries to Pandas DataFrame
 df = pd.DataFrame(articles)
-df['date'] = pd.to_datetime(df['date'], errors='coerce')
+
+# Convert "date" column to datetime
+if 'date' in df:
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+
+# Sort DataFrame by date
 df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
-# Mostrar la tabla de noticias
-st.write("Noticias RSS más recientes")
-st.dataframe(df.style.hide_columns(['authors'])) 
+# Show top 5 most recent articles for each feed
+for feed in df['feed'].unique():
+    st.write(f"### {feed}")
+    feed_df = df[df['feed'] == feed].head(5)
+    feed_df = feed_df.drop(['feed'], axis=1)
+    st.dataframe(feed_df.style.hide_index().set_properties(**{'text-align': 'left'}))
 
-# Leer feed del Zero Day Initiative
-zdi_feed = "https://www.zerodayinitiative.com/rss/zdi-all.xml"
+st.footer("By Sebastian Vargas")
 
+# Second table with ZDI RSS
+st.title("ZDI RSS")
+zdi_feed = "https://www.zerodayinitiative.com/rss/rss.xml"
+zdi = feedparser.parse(zdi_feed)
 zdi_articles = []
-zdi_feed = feedparser.parse(zdi_feed)
-for entry in zdi_feed.entries[:10]:  # Leer las 10 entradas más recientes
+for entry in zdi.entries:
     zdi_article = {}
     zdi_article['title'] = entry.title
     zdi_article['date'] = entry.get('published', '')
     zdi_article['summary'] = entry.get('summary', '')
     zdi_article['url'] = entry.link
     zdi_articles.append(zdi_article)
-
 zdi_df = pd.DataFrame(zdi_articles)
-zdi_df['date'] = pd.to_datetime(zdi_df['date'], errors='coerce')
+if 'date' in zdi_df:
+    zdi_df['date'] = pd.to_datetime(zdi_df['date'], errors='coerce')
 zdi_df = zdi_df.sort_values('date', ascending=False).reset_index(drop=True)
 
-# Mostrar la tabla de noticias del Zero Day Initiative con paginación
-st.write("Noticias Zero Day Initiative más recientes")
-page_size = 10
-page = st.sidebar.slider("Página", 1, int(len(zdi_df) / page_size) + 1)
-start = (page - 1) * page_size
-end = start + page_size
-st.dataframe(zdi_df.iloc[start:end].style.hide_index())
-st.sidebar.write("By Sebastian Vargas") 
+# Show 10 most recent articles from ZDI
+st.write("### Latest articles from ZDI")
+page_number = st.number_input('Page Number', min_value=1, max_value=zdi_df.shape[0]//10+1, value=1)
+start_idx = (page_number - 1) * 10
+end_idx = start_idx + 10
+zdi_page_df = zdi_df[start_idx:end_idx]
+zdi_page_df = zdi_page_df.drop(['date'], axis=1)
+st.dataframe(zdi_page_df.style.hide_index().set_properties(**{'text-align': 'left'}))
+
+# Add search functionality
+search_query = st.text_input("Search articles", "")
+if search_query:
+    search_results = zdi_df[zdi_df['title'].str.contains(search_query, case=False)]
+    search_results = search_results.drop(['date'], axis=1)
+    st
+
 
 
