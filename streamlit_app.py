@@ -6,7 +6,7 @@ import pandas as pd
 st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
 
 # Encabezado de la página
-st.beta_container()
+st.container()
 st.markdown("<h1 style='text-align: center;'>The Ciber House</h1>", unsafe_allow_html=True)
 st.write(" ")
 
@@ -49,6 +49,6 @@ st.write(df)
 
 # Pie de página
 st.write(" ")
-st.beta_container()
+st.container()
 st.markdown("<p style='text-align: center;'>By Sebastian Vargas</p>", unsafe_allow_html=True)
 
