@@ -1,7 +1,7 @@
-
 import streamlit as st
 import feedparser
 import pandas as pd
+import streamlit.components.v1 as components
 
 # Configuración de página
 st.set_page_config(page_title="El pasquin de Ciberseguridad", page_icon="📰", layout="wide")
@@ -43,10 +43,17 @@ if dfs:
     feed_names = list(dfs.keys())
     feed_index = st.sidebar.selectbox("Selecciona un feed:", feed_names)
     st.write(f"### Noticias de {feed_index}")
-    st.write(dfs[feed_index])
+    df_feed = dfs[feed_index]
+    for i, row in df_feed.iterrows():
+        st.write(f"<h2>{row['title']}</h2>", unsafe_allow_html=True)
+        st.write(f"<i>{row['date'].strftime('%d-%m-%Y')}</i>", unsafe_allow_html=True)
+        st.write(f"<p>{row['summary']}</p>", unsafe_allow_html=True)
+        components.html(f"<a href='{row['url']}' target='_blank'>Leer más</a>", height=50)
+        st.write("<hr>", unsafe_allow_html=True)
 else:
     st.write("No se pudieron leer los feeds de noticias.")    
 
 # Pie de página
 st.write(" ")
 st.markdown("<p style='text-align: center;'>Hecho con ❤️ por Sebastian Vargas</p>", unsafe_allow_html=True)
+
