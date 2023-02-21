@@ -21,7 +21,7 @@ rss_feeds = [
 articles = []
 for rss_feed in rss_feeds:
     feed = feedparser.parse(rss_feed)
-    for entry in feed.entries[:30]:  # Tomamos sólo las 30 noticias más recientes
+    for entry in feed.entries[:5]:  # Tomamos sólo las 5 noticias más recientes
         article = {}
         article['feed'] = feed.feed.title
         article['title'] = entry.title
