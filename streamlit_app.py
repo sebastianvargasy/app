@@ -11,7 +11,7 @@ st.write(" ")
 
 # Creamos una lista con los feeds que queremos leer
 rss_feeds = [
-    "https://www.zerodayinitiative.com/rss/published/",
+    "https://www.cisa.gov/uscert/ncas/current-activity.xml/",
     "https://feeds.feedburner.com/hispasec/zCAd"
 ]
 
