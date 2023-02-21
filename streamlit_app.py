@@ -13,6 +13,7 @@ st.write(" ")
 rss_feeds = [
     "https://www.cisa.gov/uscert/ncas/current-activity.xml/",
     "https://www.google.com/alerts/feeds/04729041965786430663/10669661265694116875",
+    "https://feeds.feedburner.com/NoticiasSeguridadInformatica",
     "https://feeds.feedburner.com/hispasec/zCAd"
 ]
 
