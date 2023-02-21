@@ -1,7 +1,7 @@
 import streamlit as st
 import feedparser
 
-st.set_page_config(page_title="Buscador de RSS", page_icon=":mag:", layout="wide")
+st.set_page_config(page_title="Últimas noticias de RSS", page_icon=":newspaper:", layout="wide")
 
 # Creamos una lista con los feeds que queremos leer
 rss_feeds = [
@@ -10,12 +10,13 @@ rss_feeds = [
     "https://www.bbc.com/news/sitemap.xml"
 ]
 
-# Leemos los feeds y guardamos los artículos en una lista
+# Leemos los feeds y guardamos las últimas 5 noticias de cada uno en una lista
 articles = []
 for rss_feed in rss_feeds:
     feed = feedparser.parse(rss_feed)
-    for entry in feed.entries:
+    for entry in feed.entries[:5]:
         article = {}
+        article['feed'] = feed.feed.title
         article['title'] = entry.title
         article['authors'] = entry.get('author', '')
         article['date'] = entry.get('published', '')
@@ -23,19 +24,14 @@ for rss_feed in rss_feeds:
         article['url'] = entry.link
         articles.append(article)
 
-# Creamos la barra de búsqueda
-search_query = st.text_input("Busca una noticia")
+# Mostramos las últimas 5 noticias de cada feed
+for feed in set([a['feed'] for a in articles]):
+    st.write(f"## {feed}")
+    for article in [a for a in articles if a['feed'] == feed]:
+        st.write(f"### {article['title']}")
+        st.write(f"Autor(es): {article['authors']}")
+        st.write(f"Fecha: {article['date']}")
+        st.write(article['summary'])
+        st.write(f"Leer más: [{article['url']}]({article['url']})")
+    st.write("")
 
-# Filtramos los artículos según la búsqueda
-filtered_articles = []
-for article in articles:
-    if search_query.lower() in article['title'].lower():
-        filtered_articles.append(article)
-
-# Mostramos los artículos filtrados
-for article in filtered_articles:
-    st.write(f"## {article['title']}")
-    st.write(f"### {article['authors']}")
-    st.write(f"Fecha: {article['date']}")
-    st.write(article['summary'])
-    st.write(f"Leer más: [{article['url']}]({article['url']})")
