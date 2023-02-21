@@ -3,14 +3,12 @@ import feedparser
 import pandas as pd
 
 st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="wide")
+st.title('The Ciber House')
 
-# Creamos una lista con los feeds que queremos leer
-rss_feeds = [    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",    "https://feeds.feedburner.com/hispasec/zCAd"]
-
-# Leemos los feeds y guardamos los artículos en una lista de diccionarios
-articles = []
-for rss_feed in rss_feeds:
+# Leer los feeds y guardar los artículos en una lista de diccionarios
+def read_feed(rss_feed):
     feed = feedparser.parse(rss_feed)
+    articles = []
     for entry in feed.entries[:5]:
         article = {}
         article['feed'] = feed.feed.title
@@ -19,34 +17,39 @@ for rss_feed in rss_feeds:
         article['summary'] = entry.get('summary', '')
         article['url'] = entry.link
         articles.append(article)
+    return pd.DataFrame(articles)
 
-# Convertimos la lista de diccionarios a un DataFrame de Pandas
-df = pd.DataFrame(articles)
+# Leer los feeds y guardar los artículos en un DataFrame de Pandas
+rss_feeds = [
+    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed",
+    "https://www.ccn-cert.cni.es/component/obrss/rss-ultimas-vulnerabilidades.feed",
+    "https://feeds.feedburner.com/hispasec/zCAd"
+]
 
-# Convertimos la columna "date" a una columna de fecha
+dfs = [read_feed(feed) for feed in rss_feeds]
+df = pd.concat(dfs, ignore_index=True)
+
+# Convertir la columna "date" a una columna de fecha
 if 'date' in df:
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
 
-# Ordenamos el DataFrame por fecha
+# Ordenar el DataFrame por fecha
 df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
-# Ocultamos la columna 'authors'
+# Eliminar la columna de autores
 if 'authors' in df:
     df = df.drop(['authors'], axis=1)
 
-# Agregamos el header y footer
-st.header('The Cyber House')
-st.dataframe(df, height=500)
+# Crear tabla con las noticias
+st.write(df, unsafe_allow_html=True)
 
-st.markdown("---")
-st.write('By Sebastian Vargas')
+# Crear footer
+st.text("By Sebastian Vargas")
 
-# Agregamos una segunda tabla con los feeds de Zero Day Initiative
-st.markdown("---")
-st.header('Zero Day Initiative RSS Feed')
-rss_feed = "https://www.zerodayinitiative.com/rss/published/"
+# Crear segunda tabla
+st.title("Zero Day Initiative")
+rss_feed = "https://www.zerodayinitiative.com/rss/updated/"
 feed = feedparser.parse(rss_feed)
-
 articles = []
 for entry in feed.entries[:10]:
     article = {}
@@ -58,25 +61,28 @@ for entry in feed.entries[:10]:
 
 df = pd.DataFrame(articles)
 
+# Convertir la columna "date" a una columna de fecha
 if 'date' in df:
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
 
+# Ordenar el DataFrame por fecha
 df = df.sort_values('date', ascending=False).reset_index(drop=True)
 
-# Agregamos la funcionalidad de búsqueda
-search_query = st.sidebar.text_input('Buscar noticias', '')
-if search_query:
-    df = df[df['title'].str.contains(search_query, case=False)]
+# Crear un buscador para la tabla
+search = st.text_input("Buscar en las noticias de Zero Day Initiative")
 
-# Paginación
-total_articles = len(df.index)
-articles_per_page = 10
-total_pages = total_articles // articles_per_page + (1 if total_articles % articles_per_page > 0 else 0)
-current_page = st.sidebar.slider('Página', 1, total_pages, 1)
-start_idx = (current_page - 1) * articles_per_page
-end_idx = start_idx + articles_per_page
-paginated_df = df.iloc[start_idx:end_idx]
+if search != "":
+    df = df[df['title'].str.contains(search, case=False) | df['summary'].str.contains(search, case=False)]
+    
+# Paginación de la tabla
+num_pages = len(df) // 10 + 1
+page_number = st.number_input("Selecciona la página", min_value=1, max_value=num_pages, step=1)
 
-st.dataframe(paginated_df, height=500)
+start = (page_number-1) * 10
+end = start + 10
+st.table(df.iloc[start:end].style.set_properties(subset=['summary'], **{'width': '600px'}))
+
+# Crear footer
+st.text("By Sebastian Vargas")
 
 
