@@ -25,7 +25,6 @@ for rss_feed in rss_feeds:
         article = {}
         article['feed'] = feed.feed.title
         article['title'] = entry.title
-        article['authors'] = entry.get('author', '')
         article['date'] = entry.get('published', '')
         article['summary'] = entry.get('summary', '')
         article['url'] = entry.link
