@@ -7,9 +7,7 @@ st.set_page_config(page_title="Noticias RSS en HTML", page_icon="📰", layout="
 
 # Creamos una lista con los feeds que queremos leer
 rss_feeds = [
-    "https://www.nytimes.com/sitemap.xml",
-    "https://elpais.com/sitemap.xml",
-    "https://www.bbc.com/news/sitemap.xml"
+    "https://www.ccn-cert.cni.es/component/obrss/rss-noticias.feed"
 ]
 
 # Leemos los feeds y guardamos los artículos en una lista de diccionarios
